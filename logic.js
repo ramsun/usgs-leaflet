@@ -1,5 +1,5 @@
-// Store the USGS JSON url
-var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_week.geojson";
+// Store the USGS JSON url (shows all earthquakes in the past day)
+var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson";
 
 // Create a map object
 var myMap = L.map("map", {
@@ -29,7 +29,7 @@ function markerSize(magnitude) {
 
 // assigns the color based on the value of the magnitude
 function markerColor(magnitude){
-  if (magnitude > 0 && magnitude < 1){
+  if (magnitude > -1 && magnitude < 1){
     circle_hex = "#7CFC00"; // Lawngreen 
   }
   else if (magnitude >= 1 && magnitude < 2){
@@ -54,12 +54,12 @@ function createFeatures(earthquakeData) {
   // Define a function we want to run once for each feature in the features array
   // Give each feature a popup describing the place, time, and magnitude of the earthquake
   function onEachFeature(feature, layer) {
-    layer.bindPopup("<h1>" + feature.properties.place).addTo(myMap);  
+    layer.bindPopup("<h1>" + feature.properties.title).addTo(myMap);  
   }
 
   // Create a GeoJSON layer containing the features array on the earthquakeData object
-  // Run the onEachFeature function once for each piece of data in the array
   L.geoJSON(earthquakeData, {
+    // Needed to attach the circles onto the map
     pointToLayer: function(feature, latlng) {
       return L.circle(latlng, {
         fillOpacity: 1,
@@ -69,6 +69,7 @@ function createFeatures(earthquakeData) {
         radius: markerSize(feature.properties.mag)
         });
     },
+    // Run the onEachFeature function once for each piece of data in the array
     onEachFeature: onEachFeature
   }).addTo(myMap);
 }
@@ -80,18 +81,16 @@ var legend = L.control({ position: "bottomright" });
     var magnitude_ranks = [0,1,2,3,4,5];
     var colors = ["#7CFC00","#FFFF00","#FFA500","#FF8C00","#FF0000","#8B0000"];
     var labels = [];
+    var categories = ['0-1','1-2','2-3','3-4','4-5', '5'];
 
     // Add min & max
-    var legendInfo = "<h2><center>Earthquake Magnitude</center></h2>" +
-      "<div class=\"labels\">" +
-        "<div class=\"min\">" + magnitude_ranks[0] + "</div>" +
-        "<div class=\"max\">" + magnitude_ranks[magnitude_ranks.length - 1] + "</div>" +
-      "</div>";
+    var legendInfo = "<h2><center>Mag</center></h2>";
 
     div.innerHTML = legendInfo;
 
     magnitude_ranks.forEach(function(limit, index) {
-      labels.push("<li style=\"background-color: " + colors[index] + "\"></li>");
+      // labels.push(categories[index] + "<li style=\"background-color: " + colors[index] + "\"></li>");
+      labels.push("<i style=\"background-color:" + colors[index] + "\"></i>" + categories[index] + (categories[index + 1] ? "" + "<br>"  : "+" ));
     });
 
     div.innerHTML += "<ul>" + labels.join("") + "</ul>";
